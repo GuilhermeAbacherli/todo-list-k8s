@@ -14,8 +14,8 @@ func Input(reader *bufio.Reader, question string) (typedValue string) {
 	return
 }
 
-// PressAnyKeyToContinue wait for the user to press any key
-func PressAnyKeyToContinue(reader *bufio.Reader) {
+// PressEnterKeyToContinue wait for the user to press any key
+func PressEnterKeyToContinue(reader *bufio.Reader) {
 	key := Input(reader, "\n\nPressione enter para continuar... ")
 	if key != "" {
 		return

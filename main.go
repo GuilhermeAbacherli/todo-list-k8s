@@ -38,22 +38,20 @@ func clearTerminal() {
 }
 
 func printWelcome(reader *bufio.Reader) {
-	fmt.Println("\nGO TODO")
+	fmt.Println("\nGO todolist")
 	fmt.Println("\nBem-vindo!")
-	key := utils.Input(reader, "\nPressione qualquer tecla para continuar... ")
-	if key != "" {
-		return
-	}
+	utils.PressEnterKeyToContinue(reader)
 }
 
 func printMenu(reader *bufio.Reader) (stop bool) {
-	fmt.Print("Menu\n\n")
+	fmt.Print("\nMenu\n\n")
 	fmt.Println("0. Encerrar")
 	fmt.Println("1. Listar TODOs")
 	fmt.Println("2. Adicionar um TODO")
-	fmt.Println("3. Editar um TODO")
-	fmt.Println("4. Excluir um TODO")
-	fmt.Println("5. Excluir todos os TODOs")
+	fmt.Println("3. Completar um TODO")
+	fmt.Println("4. Editar um TODO")
+	fmt.Println("5. Excluir um TODO")
+	fmt.Println("6. Excluir todos os TODOs")
 
 	choice := utils.Input(reader, "\nDigite a opção desejada: ")
 
@@ -76,14 +74,20 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 		service.AddTodo(reader)
 	case "3":
 		clearTerminal()
-		fmt.Println("\n3. Editar um TODO")
-		service.EditTodo(reader)
+		fmt.Println("\n3. Concluir um TODO")
+		service.CompleteTodo(reader)
 	case "4":
 		clearTerminal()
-		fmt.Println("\n4. Excluir um TODO")
+		fmt.Println("\n4. Editar um TODO")
+		service.EditTodo(reader)
 	case "5":
 		clearTerminal()
-		fmt.Println("\n5. Excluir todos os TODOs")
+		fmt.Println("\n4. Excluir um TODO")
+		service.DeleteTodo(reader)
+	case "6":
+		clearTerminal()
+		fmt.Println("\n6. Excluir todos os TODOs")
+		service.DeleteAllTodos(reader)
 	default:
 		fmt.Println("Escolha inválida, tente novamente")
 	}
