@@ -12,6 +12,11 @@ func NewTodo() Todo {
 	return Todo{}
 }
 
+// NewTodoNotDone new task with title and description only
+func NewTodoNotDone(title string, description string) Todo {
+	return Todo{title, description, false}
+}
+
 // NewTodoWithOptions new task with custom values
 func NewTodoWithOptions(title string, description string, done bool) Todo {
 	return Todo{title, description, done}
@@ -25,4 +30,9 @@ func NewTodoDefault() *Todo {
 		false,
 	)
 	return &todo
+}
+
+// ToggleDone switch the done attr
+func (todo *Todo) ToggleDone() {
+	todo.Done = !todo.Done
 }
