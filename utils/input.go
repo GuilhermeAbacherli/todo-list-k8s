@@ -13,3 +13,11 @@ func Input(reader *bufio.Reader, question string) (typedValue string) {
 	typedValue = strings.TrimSpace(typedValue)
 	return
 }
+
+// PressAnyKeyToContinue wait for the user to press any key
+func PressAnyKeyToContinue(reader *bufio.Reader) {
+	key := Input(reader, "\n\nPressione enter para continuar... ")
+	if key != "" {
+		return
+	}
+}
