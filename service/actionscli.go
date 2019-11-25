@@ -9,13 +9,11 @@ import (
 	"github.com/GuilhermeAbacherli/todolistgo/utils"
 )
 
-var todoList []entity.Todo
-
 // ShowTodo show a specif todo
 func ShowTodo(todo *entity.Todo) {
 	if todo != nil {
-		fmt.Printf("\nTítulo: %s", todo.Title)
-		fmt.Printf("\nDescrição: %s", todo.Description)
+		fmt.Printf("\nTítulo: '%s'", todo.Title)
+		fmt.Printf("\nDescrição: '%s'", todo.Description)
 		if todo.Done {
 			fmt.Println("\nConcluído: Sim")
 		} else {
@@ -27,9 +25,9 @@ func ShowTodo(todo *entity.Todo) {
 // ShowTodoList print the todos in a list format
 func ShowTodoList(index int, todo entity.Todo) {
 	fmt.Printf("\n%d- ", (index + 1))
-	fmt.Printf("Título: %s", todoList[index].Title)
-	fmt.Printf("\nDescrição: %s", todoList[index].Description)
-	if todoList[index].Done {
+	fmt.Printf("Título: %s", entity.TodoList[index].Title)
+	fmt.Printf("\nDescrição: %s", entity.TodoList[index].Description)
+	if entity.TodoList[index].Done {
 		fmt.Printf("\nConcluída: Sim")
 	} else {
 		fmt.Printf("\nConcluída: Não")
@@ -39,7 +37,7 @@ func ShowTodoList(index int, todo entity.Todo) {
 
 // SearchTodo search for a specific todo based on the index or title
 func SearchTodo(reader *bufio.Reader) (index int, todo *entity.Todo) {
-	if len(todoList) < 1 {
+	if len(entity.TodoList) < 1 {
 		fmt.Print("\nNo momento não existem TODOs para serem exibidos.")
 
 	} else {
@@ -50,20 +48,20 @@ func SearchTodo(reader *bufio.Reader) (index int, todo *entity.Todo) {
 		case "1":
 			typedValue := utils.Input(reader, "Digite o código: ")
 			index, _ := strconv.Atoi(typedValue)
-			if index < 1 || index > len(todoList) {
+			if index < 1 || index > len(entity.TodoList) {
 				fmt.Printf("O código %d não existe.\n", index)
-				if len(todoList) == 1 {
+				if len(entity.TodoList) == 1 {
 					fmt.Println("Só existe um TODO na lista.")
 				} else {
-					fmt.Printf("Digite um número entre 1 e %d.\n", len(todoList))
+					fmt.Printf("Digite um número entre 1 e %d.\n", len(entity.TodoList))
 				}
 			} else {
 				index = index - 1
-				return index, &todoList[index]
+				return index, &entity.TodoList[index]
 			}
 		case "2":
 			title := utils.Input(reader, "Digite o título: ")
-			for index, todo := range todoList {
+			for index, todo := range entity.TodoList {
 				if todo.Title == title {
 					return index, &todo
 				}
@@ -78,7 +76,7 @@ func SearchTodo(reader *bufio.Reader) (index int, todo *entity.Todo) {
 
 // ListTodos Exibe todos os TODOs
 func ListTodos(reader *bufio.Reader) {
-	if len(todoList) < 1 {
+	if len(entity.TodoList) < 1 {
 		fmt.Print("\nNo momento não existem TODOs para serem exibidos.")
 	} else {
 		fmt.Print("\nDeseja exibir quais TODOs?")
@@ -86,10 +84,10 @@ func ListTodos(reader *bufio.Reader) {
 		switch choice {
 		case "1":
 			todosPending := 0
-			for i := 0; i < len(todoList); i++ {
-				if todoList[i].Done == false {
+			for i := 0; i < len(entity.TodoList); i++ {
+				if entity.TodoList[i].Done == false {
 					todosPending++
-					ShowTodoList(i, todoList[i])
+					ShowTodoList(i, entity.TodoList[i])
 				}
 			}
 			if todosPending == 0 {
@@ -97,18 +95,18 @@ func ListTodos(reader *bufio.Reader) {
 			}
 		case "2":
 			todosCompleted := 0
-			for i := 0; i < len(todoList); i++ {
-				if todoList[i].Done == true {
+			for i := 0; i < len(entity.TodoList); i++ {
+				if entity.TodoList[i].Done == true {
 					todosCompleted++
-					ShowTodoList(i, todoList[i])
+					ShowTodoList(i, entity.TodoList[i])
 				}
 			}
 			if todosCompleted == 0 {
 				fmt.Print("\nNão há TODOs concluídos.")
 			}
 		case "3":
-			for i := 0; i < len(todoList); i++ {
-				ShowTodoList(i, todoList[i])
+			for i := 0; i < len(entity.TodoList); i++ {
+				ShowTodoList(i, entity.TodoList[i])
 			}
 		default:
 			fmt.Println("Opção inválida, tente novamente...")
@@ -122,7 +120,7 @@ func AddTodo(reader *bufio.Reader) {
 	title := utils.Input(reader, "\n    Digite o título: ")
 	description := utils.Input(reader, " Digite a descrição: ")
 	todo := entity.NewTodoNotDone(title, description)
-	todoList = append(todoList, todo)
+	entity.TodoList = append(entity.TodoList, todo)
 	fmt.Println("------------------------------")
 	fmt.Println("\nTodo adicionado:")
 	ShowTodo(&todo)
@@ -168,12 +166,12 @@ func EditTodo(reader *bufio.Reader) {
 	utils.PressEnterKeyToContinue(reader)
 }
 
-// DeleteTodo delete some specific TODO
-func DeleteTodo(reader *bufio.Reader) {
+// RemoveTodo delete some specific TODO
+func RemoveTodo(reader *bufio.Reader) {
 	index, todoToDelete := SearchTodo(reader)
 	if todoToDelete != nil {
-		copy(todoList[index:], todoList[index+1:])
-		todoList = todoList[:len(todoList)-1]
+		copy(entity.TodoList[index:], entity.TodoList[index+1:])
+		entity.TodoList = entity.TodoList[:len(entity.TodoList)-1]
 		fmt.Println("------------------------------")
 		fmt.Println("\nTodo excluído:")
 		ShowTodo(todoToDelete)
@@ -181,15 +179,14 @@ func DeleteTodo(reader *bufio.Reader) {
 	utils.PressEnterKeyToContinue(reader)
 }
 
-// DeleteAllTodos delete all TODOs
-func DeleteAllTodos(reader *bufio.Reader) {
-	if len(todoList) < 1 {
+// RemoveAllTodos delete all TODOs
+func RemoveAllTodos(reader *bufio.Reader) {
+	if len(entity.TodoList) < 1 {
 		fmt.Println("\nNo momento não existem TODOs para serem excluídos.")
 	} else {
-
-		oldQuantity := len(todoList)
-		todoList = nil
-		if todoList == nil {
+		oldQuantity := len(entity.TodoList)
+		entity.TodoList = nil
+		if entity.TodoList == nil {
 			if oldQuantity == 1 {
 				fmt.Printf("\n%d TODO foi excluído", oldQuantity)
 			} else {
