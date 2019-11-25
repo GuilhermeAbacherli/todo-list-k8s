@@ -3,12 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
 
 	"github.com/GuilhermeAbacherli/todolistgo/service"
 	"github.com/GuilhermeAbacherli/todolistgo/utils"
+	"github.com/gorilla/mux"
 )
 
 var clear map[string]func() // Create a map for storing clear functions
@@ -83,11 +86,11 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 	case "5":
 		clearTerminal()
 		fmt.Println("\n4. Excluir um TODO")
-		service.DeleteTodo(reader)
+		service.RemoveTodo(reader)
 	case "6":
 		clearTerminal()
 		fmt.Println("\n6. Excluir todos os TODOs")
-		service.DeleteAllTodos(reader)
+		service.RemoveAllTodos(reader)
 	default:
 		fmt.Println("Escolha inválida, tente novamente")
 	}
@@ -95,6 +98,19 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 }
 
 func main() {
+
+	go func() {
+		router := mux.NewRouter()
+		router.HandleFunc("/todo", service.GetAllTodos).Methods("GET")
+		router.HandleFunc("/todo/{id}", service.GetTodo).Methods("GET")
+		router.HandleFunc("/todo", service.CreateTodo).Methods("POST")
+		router.HandleFunc("/todo/{id}", service.UpdateTodo).Methods("PATCH")
+		router.HandleFunc("/todo/{id}", service.DeleteTodo).Methods("DELETE")
+		router.HandleFunc("/todo", service.DeleteAllTodos).Methods("DELETE")
+
+		log.Fatal(http.ListenAndServe(":8000", router))
+	}()
+
 	reader := bufio.NewReader(os.Stdin)
 	clearTerminal()
 	printWelcome(reader)
