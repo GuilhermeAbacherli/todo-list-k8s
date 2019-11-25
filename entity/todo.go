@@ -1,10 +1,14 @@
 package entity
 
+// TodoList global todolist
+var TodoList []Todo
+
 // Todo task struct
 type Todo struct {
-	Title       string
-	Description string
-	Done        bool
+	ID          int    `json:"id,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Done        bool   `json:"done"`
 }
 
 // NewTodo empty new task
@@ -14,12 +18,20 @@ func NewTodo() Todo {
 
 // NewTodoNotDone new task with title and description only
 func NewTodoNotDone(title string, description string) Todo {
-	return Todo{title, description, false}
+	if len(TodoList) == 0 {
+		return Todo{1, title, description, false}
+	}
+	id := TodoList[len(TodoList)-1].ID + 1
+	return Todo{id, title, description, false}
 }
 
 // NewTodoWithOptions new task with custom values
 func NewTodoWithOptions(title string, description string, done bool) Todo {
-	return Todo{title, description, done}
+	if len(TodoList) == 0 {
+		return Todo{1, title, description, done}
+	}
+	id := TodoList[len(TodoList)-1].ID + 1
+	return Todo{id, title, description, done}
 }
 
 // NewTodoDefault new task with default values
