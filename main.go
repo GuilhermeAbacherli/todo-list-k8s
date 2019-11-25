@@ -108,7 +108,7 @@ func main() {
 		router.HandleFunc("/todo/{id}", service.DeleteTodo).Methods("DELETE")
 		router.HandleFunc("/todo", service.DeleteAllTodos).Methods("DELETE")
 
-		log.Fatal(http.ListenAndServe(":8000", router))
+		log.Fatal(http.ListenAndServe(":8080", router))
 	}()
 
 	reader := bufio.NewReader(os.Stdin)
