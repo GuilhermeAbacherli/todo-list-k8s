@@ -93,7 +93,7 @@ func ListTodos(reader *bufio.Reader) {
 				}
 			}
 			if todosPending == 0 {
-				fmt.Print("Não há TODOs pendentes.")
+				fmt.Print("\nNão há TODOs pendentes.")
 			}
 		case "2":
 			todosCompleted := 0
@@ -104,7 +104,7 @@ func ListTodos(reader *bufio.Reader) {
 				}
 			}
 			if todosCompleted == 0 {
-				fmt.Print("Não há TODOs concluídos.")
+				fmt.Print("\nNão há TODOs concluídos.")
 			}
 		case "3":
 			for i := 0; i < len(todoList); i++ {
@@ -146,34 +146,38 @@ func CompleteTodo(reader *bufio.Reader) {
 // EditTodo edit some specific TODO
 func EditTodo(reader *bufio.Reader) {
 	_, todo := SearchTodo(reader)
-	ShowTodo(todo)
-	fmt.Println("------------------------------")
-	fmt.Println("\nDigite os novos valores")
-	todo.Title = utils.Input(reader, "Título: ")
-	todo.Description = utils.Input(reader, "Descrição: ")
-	for {
-		done := utils.Input(reader, "Concluído (1. Sim | 2. Não): ")
-		if done == "1" {
-			todo.Done = true
-			break
+	if todo != nil {
+		ShowTodo(todo)
+		fmt.Println("------------------------------")
+		fmt.Println("\nDigite os novos valores")
+		todo.Title = utils.Input(reader, "Título: ")
+		todo.Description = utils.Input(reader, "Descrição: ")
+		for {
+			done := utils.Input(reader, "Concluído (1. Sim | 2. Não): ")
+			if done == "1" {
+				todo.Done = true
+				break
+			}
+			if done == "2" {
+				todo.Done = false
+				break
+			}
 		}
-		if done == "2" {
-			todo.Done = false
-			break
-		}
+		ShowTodo(todo)
 	}
-	ShowTodo(todo)
 	utils.PressEnterKeyToContinue(reader)
 }
 
 // DeleteTodo delete some specific TODO
 func DeleteTodo(reader *bufio.Reader) {
-	index, todoDeleted := SearchTodo(reader)
-	copy(todoList[index:], todoList[index+1:])
-	todoList = todoList[:len(todoList)-1]
-	fmt.Println("------------------------------")
-	fmt.Println("\nTodo excluído:")
-	ShowTodo(todoDeleted)
+	index, todoToDelete := SearchTodo(reader)
+	if todoToDelete != nil {
+		copy(todoList[index:], todoList[index+1:])
+		todoList = todoList[:len(todoList)-1]
+		fmt.Println("------------------------------")
+		fmt.Println("\nTodo excluído:")
+		ShowTodo(todoToDelete)
+	}
 	utils.PressEnterKeyToContinue(reader)
 }
 
