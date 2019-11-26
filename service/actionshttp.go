@@ -2,75 +2,76 @@ package service
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/GuilhermeAbacherli/todolistgo/dao"
 	"github.com/GuilhermeAbacherli/todolistgo/entity"
 )
 
+func logRequest(request *http.Request) {
+	log.Println(request.Method + " " + request.Host + request.RequestURI)
+}
+
+// DatabaseConnection maintains a single connection obj to call the methods
+type DatabaseConnection struct {
+	Client *mongo.Client
+}
+
 // GetAllTodos return all the TODOs from database
-func GetAllTodos(writer http.ResponseWriter, request *http.Request) {
-	json.NewEncoder(writer).Encode(entity.TodoList)
+func (dc *DatabaseConnection) GetAllTodos(writer http.ResponseWriter, request *http.Request) {
+	logRequest(request)
+	todolist := dao.SelectAllTodos(dc.Client, bson.M{})
+	json.NewEncoder(writer).Encode(todolist)
 }
 
 // GetTodo return a specific TODO based on the ID
-func GetTodo(writer http.ResponseWriter, request *http.Request) {
+func (dc *DatabaseConnection) GetTodo(writer http.ResponseWriter, request *http.Request) {
+	logRequest(request)
 	params := mux.Vars(request)
 	id, _ := strconv.Atoi(params["id"])
-	for _, todo := range entity.TodoList {
-		if todo.ID == id {
-			json.NewEncoder(writer).Encode(todo)
-			return
-		}
-	}
-	return
-}
-
-// CreateTodo creates a new TODO
-func CreateTodo(writer http.ResponseWriter, request *http.Request) {
-	var todo entity.Todo
-	_ = json.NewDecoder(request.Body).Decode(&todo)
-	todo = entity.NewTodoWithOptions(todo.Title, todo.Description, todo.Done)
-	entity.TodoList = append(entity.TodoList, todo)
+	todo := dao.SelectOneTodo(dc.Client, bson.M{"ID": id})
 	json.NewEncoder(writer).Encode(todo)
 }
 
+// CreateTodo creates a new TODO
+func (dc *DatabaseConnection) CreateTodo(writer http.ResponseWriter, request *http.Request) {
+	logRequest(request)
+	var todo entity.Todo
+	_ = json.NewDecoder(request.Body).Decode(&todo)
+	todo = entity.NewTodoWithOptions(todo.Title, todo.Description, todo.Done)
+	insertedID := dao.InsertOneTodo(dc.Client, todo)
+	json.NewEncoder(writer).Encode(insertedID)
+}
+
 // UpdateTodo update parcially a existing TODO
-func UpdateTodo(writer http.ResponseWriter, request *http.Request) {
+func (dc *DatabaseConnection) UpdateTodo(writer http.ResponseWriter, request *http.Request) {
+	logRequest(request)
+	var todo entity.Todo
+	_ = json.NewDecoder(request.Body).Decode(&todo)
 	params := mux.Vars(request)
 	id, _ := strconv.Atoi(params["id"])
-	for index, todo := range entity.TodoList {
-		if todo.ID == id {
-			_ = json.NewDecoder(request.Body).Decode(&todo)
-			entity.TodoList[index] = todo
-			json.NewEncoder(writer).Encode(todo)
-			break
-		}
-	}
+	modifiedCount := dao.UpdateOneTodo(dc.Client, todo, bson.M{"id": id})
+	json.NewEncoder(writer).Encode(modifiedCount)
 }
 
 // DeleteTodo delete a specific TODO based on the ID
-func DeleteTodo(writer http.ResponseWriter, request *http.Request) {
+func (dc *DatabaseConnection) DeleteTodo(writer http.ResponseWriter, request *http.Request) {
+	logRequest(request)
 	params := mux.Vars(request)
 	id, _ := strconv.Atoi(params["id"])
-	for index, todo := range entity.TodoList {
-		if todo.ID == id {
-			entity.TodoList = append(entity.TodoList[:index], entity.TodoList[index+1:]...)
-			json.NewEncoder(writer).Encode(todo)
-			break
-		}
-	}
+	deletedCount := dao.DeleteOneTodo(dc.Client, bson.M{"id": id})
+	json.NewEncoder(writer).Encode(deletedCount)
 }
 
 // DeleteAllTodos delete all todos from database
-func DeleteAllTodos(writer http.ResponseWriter, request *http.Request) {
-	oldQuantity := len(entity.TodoList)
-	if oldQuantity == 0 {
-		json.NewEncoder(writer).Encode(-1)
-	} else {
-		entity.TodoList = nil
-		json.NewEncoder(writer).Encode(oldQuantity)
-	}
+func (dc *DatabaseConnection) DeleteAllTodos(writer http.ResponseWriter, request *http.Request) {
+	logRequest(request)
+	deletedCount := dao.DeleteAllTodos(dc.Client)
+	json.NewEncoder(writer).Encode(deletedCount)
 }
