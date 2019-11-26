@@ -2,12 +2,18 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
+
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/GuilhermeAbacherli/todolistgo/service"
 	"github.com/GuilhermeAbacherli/todolistgo/utils"
@@ -43,6 +49,7 @@ func clearTerminal() {
 func printWelcome(reader *bufio.Reader) {
 	fmt.Println("\nGO todolist")
 	fmt.Println("\nBem-vindo!")
+	fmt.Println("O webservice funciona em paralelo com o terminal")
 	utils.PressEnterKeyToContinue(reader)
 }
 
@@ -97,29 +104,57 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 	return false
 }
 
+// GetClient returns a new mongodb client
+func GetClient() *mongo.Client {
+	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
+	client, err := mongo.NewClient(clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = client.Connect(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	return client
+}
+
 func main() {
 
-	go func() {
-		router := mux.NewRouter()
-		router.HandleFunc("/todo", service.GetAllTodos).Methods("GET")
-		router.HandleFunc("/todo/{id}", service.GetTodo).Methods("GET")
-		router.HandleFunc("/todo", service.CreateTodo).Methods("POST")
-		router.HandleFunc("/todo/{id}", service.UpdateTodo).Methods("PATCH")
-		router.HandleFunc("/todo/{id}", service.DeleteTodo).Methods("DELETE")
-		router.HandleFunc("/todo", service.DeleteAllTodos).Methods("DELETE")
-
-		log.Fatal(http.ListenAndServe(":8080", router))
-	}()
-
-	reader := bufio.NewReader(os.Stdin)
 	clearTerminal()
-	printWelcome(reader)
+	log.Println("Started")
 
-	for {
-		clearTerminal()
-		stop := printMenu(reader)
-		if stop {
-			break
-		}
+	client := GetClient()
+	err := client.Ping(context.Background(), readpref.Primary())
+	if err != nil {
+		log.Fatal("Couldn't connect to the database", err)
+	} else {
+		log.Println("Connected to MongoDB!")
 	}
+
+	dc := service.DatabaseConnection{
+		Client: client,
+	}
+
+	// go func() {
+	router := mux.NewRouter()
+	router.HandleFunc("/todo", dc.GetAllTodos).Methods("GET")
+	router.HandleFunc("/todo/{id}", dc.GetTodo).Methods("GET")
+	router.HandleFunc("/todo", dc.CreateTodo).Methods("POST")
+	router.HandleFunc("/todo/{id}", dc.UpdateTodo).Methods("PATCH")
+	router.HandleFunc("/todo/{id}", dc.DeleteTodo).Methods("DELETE")
+	router.HandleFunc("/todo", dc.DeleteAllTodos).Methods("DELETE")
+
+	log.Fatal(http.ListenAndServe(":8080", router))
+	// }()
+
+	// reader := bufio.NewReader(os.Stdin)
+	// printWelcome(reader)
+
+	// for {
+	// 	clearTerminal()
+	// 	stop := printMenu(reader)
+	// 	if stop {
+	// 		break
+	// 	}
+	// }
 }
