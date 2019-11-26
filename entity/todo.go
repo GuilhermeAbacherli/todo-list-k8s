@@ -5,10 +5,10 @@ var TodoList []Todo
 
 // Todo task struct
 type Todo struct {
-	ID          int    `json:"id,omitempty"`
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Done        bool   `json:"done"`
+	ID          int    `json:"id,omitempty" bson:"id,omitempty"`
+	Title       string `json:"title,omitempty" bson:"title,omitempty"`
+	Description string `json:"description,omitempty" bson:"description,omitempty"`
+	Done        bool   `json:"done" bson:"done"`
 }
 
 // NewTodo empty new task
@@ -18,20 +18,12 @@ func NewTodo() Todo {
 
 // NewTodoNotDone new task with title and description only
 func NewTodoNotDone(title string, description string) Todo {
-	if len(TodoList) == 0 {
-		return Todo{1, title, description, false}
-	}
-	id := TodoList[len(TodoList)-1].ID + 1
-	return Todo{id, title, description, false}
+	return Todo{-1, title, description, false}
 }
 
 // NewTodoWithOptions new task with custom values
 func NewTodoWithOptions(title string, description string, done bool) Todo {
-	if len(TodoList) == 0 {
-		return Todo{1, title, description, done}
-	}
-	id := TodoList[len(TodoList)-1].ID + 1
-	return Todo{id, title, description, done}
+	return Todo{-1, title, description, done}
 }
 
 // NewTodoDefault new task with default values
