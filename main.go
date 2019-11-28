@@ -17,6 +17,7 @@ import (
 
 	"github.com/GuilhermeAbacherli/todolistgo/service"
 	"github.com/GuilhermeAbacherli/todolistgo/utils"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -137,6 +138,11 @@ func main() {
 
 	// go func() {
 	router := mux.NewRouter()
+
+	headersOk := handlers.AllowedHeaders([]string{"*"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PATCH", "DELETE"})
+
 	router.HandleFunc("/todo", dc.GetAllTodos).Methods("GET")
 	router.HandleFunc("/todo/{id}", dc.GetTodo).Methods("GET")
 	router.HandleFunc("/todo", dc.CreateTodo).Methods("POST")
@@ -144,7 +150,8 @@ func main() {
 	router.HandleFunc("/todo/{id}", dc.DeleteTodo).Methods("DELETE")
 	router.HandleFunc("/todo", dc.DeleteAllTodos).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080",
+		handlers.CORS(originsOk, headersOk, methodsOk)(router)))
 	// }()
 
 	// reader := bufio.NewReader(os.Stdin)
