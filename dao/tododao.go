@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// SelectAllTodos return all of the TODOs from mongodb
-func SelectAllTodos(client *mongo.Client, filter bson.M) []*entity.Todo {
+// SelectManyTodos return all of the TODOs from mongodb
+func SelectManyTodos(client *mongo.Client, filter bson.M) []*entity.Todo {
 	var todolist []*entity.Todo
 	collection := client.Database("todolistgo").Collection("todolist")
 	cur, err := collection.Find(context.TODO(), filter)
