@@ -23,11 +23,18 @@ type DatabaseConnection struct {
 	Client *mongo.Client
 }
 
-// GetAllTodos return all the TODOs from database
-func (dc *DatabaseConnection) GetAllTodos(writer http.ResponseWriter, request *http.Request) {
+// GetManyTodos return all the TODOs from database
+func (dc *DatabaseConnection) GetManyTodos(writer http.ResponseWriter, request *http.Request) {
 	logRequest(request)
-	todolist := dao.SelectAllTodos(dc.Client, bson.M{})
-	json.NewEncoder(writer).Encode(todolist)
+	params := mux.Vars(request)
+	if params["status"] != "" {
+		done, _ := strconv.ParseBool(params["status"])
+		todolist := dao.SelectManyTodos(dc.Client, bson.M{"done": done})
+		json.NewEncoder(writer).Encode(todolist)
+	} else {
+		todolist := dao.SelectManyTodos(dc.Client, bson.M{})
+		json.NewEncoder(writer).Encode(todolist)
+	}
 }
 
 // GetTodo return a specific TODO based on the ID
@@ -35,7 +42,13 @@ func (dc *DatabaseConnection) GetTodo(writer http.ResponseWriter, request *http.
 	logRequest(request)
 	params := mux.Vars(request)
 	id, _ := strconv.Atoi(params["id"])
-	todo := dao.SelectOneTodo(dc.Client, bson.M{"ID": id})
+	todo := dao.SelectOneTodo(dc.Client, bson.M{"id": id})
+	if todo.ID == 0 &&
+		todo.Title == "" &&
+		todo.Description == "" &&
+		todo.Done == false {
+		return
+	}
 	json.NewEncoder(writer).Encode(todo)
 }
 
