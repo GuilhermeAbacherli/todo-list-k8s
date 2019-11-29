@@ -143,7 +143,8 @@ func main() {
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PATCH", "DELETE"})
 
-	router.HandleFunc("/todo", dc.GetAllTodos).Methods("GET")
+	router.HandleFunc("/todo", dc.GetManyTodos).Methods("GET")
+	router.HandleFunc("/todo/done/{status}", dc.GetManyTodos).Methods("GET")
 	router.HandleFunc("/todo/{id}", dc.GetTodo).Methods("GET")
 	router.HandleFunc("/todo", dc.CreateTodo).Methods("POST")
 	router.HandleFunc("/todo/{id}", dc.UpdateTodo).Methods("PATCH")
