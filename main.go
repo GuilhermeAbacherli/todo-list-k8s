@@ -10,13 +10,13 @@ import (
 	"os/exec"
 	"runtime"
 
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"github.com/GuilhermeAbacherli/todolistgo/service"
 	"github.com/GuilhermeAbacherli/todolistgo/utils"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -108,15 +108,15 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 // GetClient returns a new mongodb client
 func GetClient() *mongo.Client {
 	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
-	client, err := mongo.NewClient(clientOptions)
+	currentClientConnection, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = client.Connect(context.Background())
+	err = currentClientConnection.Connect(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
-	return client
+	return currentClientConnection
 }
 
 func main() {
@@ -124,8 +124,8 @@ func main() {
 	clearTerminal()
 	log.Println("Started")
 
-	client := GetClient()
-	err := client.Ping(context.Background(), readpref.Primary())
+	currentClientConnection := GetClient()
+	err := currentClientConnection.Ping(context.Background(), readpref.Primary())
 	if err != nil {
 		log.Fatal("Couldn't connect to the database", err)
 	} else {
@@ -133,7 +133,7 @@ func main() {
 	}
 
 	dc := service.DatabaseConnection{
-		Client: client,
+		Client: currentClientConnection,
 	}
 
 	// go func() {
@@ -142,6 +142,10 @@ func main() {
 	headersOk := handlers.AllowedHeaders([]string{"*"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PATCH", "DELETE"})
+
+	router.HandleFunc("/register", dc.Register).Methods("POST")
+	router.HandleFunc("/login", dc.Login).Methods("POST")
+	router.HandleFunc("/profile", dc.Profile).Methods("GET")
 
 	router.HandleFunc("/todo", dc.GetManyTodos).Methods("GET")
 	router.HandleFunc("/todo/done/{status}", dc.GetManyTodos).Methods("GET")
