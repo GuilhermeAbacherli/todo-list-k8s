@@ -16,13 +16,13 @@ func SelectManyTodos(client *mongo.Client, filter bson.M) []*entity.Todo {
 	collection := client.Database("todolistgo").Collection("todolist")
 	cur, err := collection.Find(context.TODO(), filter)
 	if err != nil {
-		log.Fatal("Error on finding all the documents: ", err)
+		log.Println("Error on finding all the documents: ", err)
 	}
 	for cur.Next(context.TODO()) {
 		var todo entity.Todo
 		err = cur.Decode(&todo)
 		if err != nil {
-			log.Fatal("Error on decoding the document: ", err)
+			log.Println("Error on decoding the document: ", err)
 		}
 		todolist = append(todolist, &todo)
 	}
@@ -50,7 +50,7 @@ func InsertOneTodo(client *mongo.Client, todo entity.Todo) interface{} {
 	todo.ID = lastTodo.ID + 1
 	insertResult, err := collection.InsertOne(context.TODO(), todo)
 	if err != nil {
-		log.Fatalln("Error on inserting one document: ", err)
+		log.Println("Error on inserting one document: ", err)
 	}
 	return insertResult.InsertedID
 }
@@ -62,7 +62,7 @@ func UpdateOneTodo(client *mongo.Client, newTodo entity.Todo, filter bson.M) (up
 	err := collection.FindOneAndUpdate(context.TODO(), filter, update,
 		options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&updatedTodo)
 	if err != nil {
-		log.Fatal("Error on updating one document: ", err)
+		log.Println("Error on updating one document: ", err)
 	}
 	return
 }
