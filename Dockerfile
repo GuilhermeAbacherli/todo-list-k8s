@@ -2,6 +2,8 @@ FROM golang
 
 RUN go get github.com/gorilla/handlers
 RUN go get github.com/gorilla/mux
+RUN go get github.com/dgrijalva/jwt-go
+RUN go get golang.org/x/crypto/bcrypt
 RUN go get go.mongodb.org/mongo-driver/mongo
 
 COPY ./ /go/src/github.com/GuilhermeAbacherli/todolistgo
