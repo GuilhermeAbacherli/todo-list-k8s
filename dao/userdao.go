@@ -18,6 +18,7 @@ func SelectOneUser(client *mongo.Client, filter bson.M, user *entity.User) {
 		if err.Error() == "mongo: no documents in result" {
 			return
 		}
+		log.Println("Error on decoding the found user", err)
 	}
 	return
 }
