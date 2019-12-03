@@ -107,7 +107,7 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 
 // GetClient returns a new mongodb client
 func GetClient() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	currentClientConnection, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -145,15 +145,16 @@ func main() {
 
 	router.HandleFunc("/register", dc.Register).Methods("POST")
 	router.HandleFunc("/login", dc.Login).Methods("POST")
-	router.HandleFunc("/profile", dc.Profile).Methods("GET")
 
-	router.HandleFunc("/todo", dc.GetManyTodos).Methods("GET")
-	router.HandleFunc("/todo/done/{status}", dc.GetManyTodos).Methods("GET")
-	router.HandleFunc("/todo/{id}", dc.GetTodo).Methods("GET")
-	router.HandleFunc("/todo", dc.CreateTodo).Methods("POST")
-	router.HandleFunc("/todo/{id}", dc.UpdateTodo).Methods("PATCH")
-	router.HandleFunc("/todo/{id}", dc.DeleteTodo).Methods("DELETE")
-	router.HandleFunc("/todo", dc.DeleteAllTodos).Methods("DELETE")
+	router.Handle("/profile", service.AuthMiddleware(dc.Profile)).Methods("GET")
+
+	router.Handle("/todo", service.AuthMiddleware(dc.GetManyTodos)).Methods("GET")
+	router.Handle("/todo/done/{status}", service.AuthMiddleware(dc.GetManyTodos)).Methods("GET")
+	router.Handle("/todo/{id}", service.AuthMiddleware(dc.GetTodo)).Methods("GET")
+	router.Handle("/todo", service.AuthMiddleware(dc.CreateTodo)).Methods("POST")
+	router.Handle("/todo/{id}", service.AuthMiddleware(dc.UpdateTodo)).Methods("PATCH")
+	router.Handle("/todo/{id}", service.AuthMiddleware(dc.DeleteTodo)).Methods("DELETE")
+	router.Handle("/todo", service.AuthMiddleware(dc.DeleteAllTodos)).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8080",
 		handlers.CORS(originsOk, headersOk, methodsOk)(router)))
