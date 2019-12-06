@@ -138,7 +138,7 @@ func (dc *DatabaseConnection) Login(writer http.ResponseWriter, request *http.Re
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": userFoundInDatabase.Username,
 		"iat":      time.Now().Format(time.RFC3339),
-		"exp":      time.Now().Add(time.Second * 25).Format(time.RFC3339),
+		"exp":      time.Now().Add(time.Hour * 1).Format(time.RFC3339),
 	})
 
 	tokenString, err := token.SignedString([]byte("secret"))
