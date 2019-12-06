@@ -39,7 +39,7 @@ func SelectOneTodo(client *mongo.Client, filter bson.M) entity.Todo {
 }
 
 // InsertOneTodo insert a new todo in mongodb
-func InsertOneTodo(client *mongo.Client, todo entity.Todo) interface{} {
+func InsertOneTodo(client *mongo.Client, todo entity.Todo) entity.Todo {
 	collection := client.Database("todolistgo").Collection("todolist")
 	options := options.FindOne()
 	// Sort by 'ID' field descending
@@ -48,11 +48,11 @@ func InsertOneTodo(client *mongo.Client, todo entity.Todo) interface{} {
 	documentReturned := collection.FindOne(context.TODO(), bson.M{}, options)
 	documentReturned.Decode(&lastTodo)
 	todo.ID = lastTodo.ID + 1
-	insertResult, err := collection.InsertOne(context.TODO(), todo)
+	_, err := collection.InsertOne(context.TODO(), todo)
 	if err != nil {
 		log.Println("Error on inserting one document: ", err)
 	}
-	return insertResult.InsertedID
+	return todo
 }
 
 // UpdateOneTodo updates one existing TODO in mongodb
