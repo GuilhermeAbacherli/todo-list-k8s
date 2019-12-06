@@ -1,6 +1,6 @@
 FROM golang
 
-RUN go get github.com/gorilla/handlers
+RUN go get github.com/rs/cors
 RUN go get github.com/gorilla/mux
 RUN go get github.com/dgrijalva/jwt-go
 RUN go get golang.org/x/crypto/bcrypt

@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"runtime"
 
+	"github.com/rs/cors"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -17,7 +19,6 @@ import (
 	"github.com/GuilhermeAbacherli/todolistgo/service"
 	"github.com/GuilhermeAbacherli/todolistgo/utils"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -107,7 +108,7 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 
 // GetClient returns a new mongodb client
 func GetClient() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
 	currentClientConnection, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -138,10 +139,7 @@ func main() {
 
 	// go func() {
 	router := mux.NewRouter()
-
-	headersOk := handlers.AllowedHeaders([]string{"*"})
-	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PATCH", "DELETE"})
+	handler := cors.AllowAll().Handler(router)
 
 	router.HandleFunc("/register", dc.Register).Methods("POST")
 	router.HandleFunc("/login", dc.Login).Methods("POST")
@@ -156,8 +154,8 @@ func main() {
 	router.Handle("/todo/{id}", service.AuthMiddleware(dc.DeleteTodo)).Methods("DELETE")
 	router.Handle("/todo", service.AuthMiddleware(dc.DeleteAllTodos)).Methods("DELETE")
 
-	log.Fatal(http.ListenAndServe(":8080",
-		handlers.CORS(originsOk, headersOk, methodsOk)(router)))
+	log.Fatal(http.ListenAndServe(":8080", handler))
+
 	// }()
 
 	// reader := bufio.NewReader(os.Stdin)
