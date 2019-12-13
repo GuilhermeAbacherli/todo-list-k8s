@@ -1,4 +1,7 @@
-FROM golang
+FROM golang:alpine
+
+RUN apk add --update --no-cache git
+RUN apk add build-base
 
 RUN go get github.com/rs/cors
 RUN go get github.com/gorilla/mux
