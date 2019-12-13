@@ -108,7 +108,7 @@ func printMenu(reader *bufio.Reader) (stop bool) {
 
 // GetClient returns a new mongodb client
 func GetClient() *mongo.Client {
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://mongo-0.mongo,mongo-1.mongo:27017")
 	currentClientConnection, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		log.Fatal(err)
