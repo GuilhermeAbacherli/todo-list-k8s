@@ -29,6 +29,7 @@ const tableIcons = {
 };
 
 const refreshIcon = () => (<Refresh />);
+const deleteIcon = () => (<DeleteOutline />);
 
 
 const CTodolist = (props) => {
@@ -54,6 +55,11 @@ const CTodolist = (props) => {
                         tooltip: 'Atualizar dados',
                         isFreeAction: true,
                         onClick: props.getTodolist,
+                    },
+                    {
+                        tooltip: "Remover todas as linhas selecionadas",
+                        icon: deleteIcon,
+                        onClick: (event, data) => alert(`Você deseja excluir ${data.length} linhas`)
                     }
                 ]}
                 editable={{
