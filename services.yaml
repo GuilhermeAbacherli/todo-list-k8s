@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todolistreact
+spec:
+  selector:
+    app: webapp
+  ports:
+    - name: http
+      port: 80
+      nodePort: 30080
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todolistgo
+spec:
+  selector:
+    app: api
+  ports:
+    - name: http
+      port: 8080
+      nodePort: 30000
+  type: NodePort
